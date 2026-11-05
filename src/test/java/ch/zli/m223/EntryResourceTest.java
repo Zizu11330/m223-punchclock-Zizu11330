@@ -17,6 +17,26 @@ public class EntryResourceTest {
              .statusCode(200)
              .body(is("[]"));
 
+        for (String invalidEntry : new String[] {
+            "{\"checkOut\":\"2026-09-29T17:00:00\"}",
+            "{\"checkIn\":\"2026-09-29T08:00:00\"}",
+            "{\"checkIn\":\"2026-09-29T17:00:00\",\"checkOut\":\"2026-09-29T08:00:00\"}",
+            "{\"checkIn\":\"2026-09-29T08:00:00\",\"checkOut\":\"2026-09-29T08:00:00\"}"
+        }) {
+            given()
+              .contentType("application/json")
+              .body(invalidEntry)
+              .when().post("/entries")
+              .then()
+                 .statusCode(400);
+        }
+
+        given()
+          .when().get("/entries")
+          .then()
+             .statusCode(200)
+             .body(is("[]"));
+
         Long id = given()
           .contentType("application/json")
           .body("""
@@ -42,7 +62,8 @@ public class EntryResourceTest {
             "null",
             "{}",
             "{\"checkIn\":\"2026-09-30T09:00:00\"}",
-            "{\"checkOut\":\"2026-09-30T18:00:00\"}"
+            "{\"checkOut\":\"2026-09-30T18:00:00\"}",
+            "{\"checkIn\":\"2026-09-30T18:00:00\",\"checkOut\":\"2026-09-30T09:00:00\"}"
         }) {
             given()
               .contentType("application/json")

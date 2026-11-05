@@ -26,8 +26,16 @@ Branch: `feature/2-1-schnittstelle-erweitern`
 | PUT | `/entries/{id}` | Ersetzt `checkIn` und `checkOut`, liefert den aktualisierten Eintrag (200). |
 | DELETE | `/entries/{id}` | Loescht den Eintrag, liefert keinen Inhalt (204). |
 
-Beide Endpunkte liefern 404, wenn der Eintrag nicht existiert. Beim Bearbeiten
-muessen beide Zeitstempel im JSON-Body vorhanden sein, sonst wird 400 geliefert.
+Beide Endpunkte liefern 404, wenn der Eintrag nicht existiert.
+
+### Validierung
+
+Bei POST und PUT gilt:
+
+- `checkIn` und `checkOut` sind Pflichtfelder.
+- `checkIn` muss zeitlich vor `checkOut` liegen.
+
+Ungueltige Daten werden mit 400 abgelehnt.
 Die ID im Pfad bestimmt den Eintrag; eine ID im Body wird ignoriert.
 
 Beispiel fuer den JSON-Body von PUT:
