@@ -17,6 +17,31 @@ die HTML-Datei in Edge oder Chrome oeffnen und mit Papierformat A4,
 Skalierung 100 %, ohne Kopf- und Fusszeilen und mit Hintergrundgrafiken
 als PDF drucken. Die Quelle definiert sechs Druckseiten.
 
+## Aufgabe 2.1: Schnittstelle erweitern
+
+Branch: `feature/2-1-schnittstelle-erweitern`
+
+| Methode | Endpunkt | Verhalten |
+|---------|----------|-----------|
+| PUT | `/entries/{id}` | Ersetzt `checkIn` und `checkOut`, liefert den aktualisierten Eintrag (200). |
+| DELETE | `/entries/{id}` | Loescht den Eintrag, liefert keinen Inhalt (204). |
+
+Beide Endpunkte liefern 404, wenn der Eintrag nicht existiert. Beim Bearbeiten
+muessen beide Zeitstempel im JSON-Body vorhanden sein, sonst wird 400 geliefert.
+Die ID im Pfad bestimmt den Eintrag; eine ID im Body wird ignoriert.
+
+Beispiel fuer den JSON-Body von PUT:
+
+```json
+{
+  "checkIn": "2026-09-30T09:00:00",
+  "checkOut": "2026-09-30T18:00:00"
+}
+```
+
+Die Endpunkte sind auch ueber Swagger UI unter
+http://localhost:8080/q/swagger-ui/ verfuegbar.
+
 ## Erste Schritte
 
 1. Erstelle eine Kopie (fork) von diesem Projekt.
