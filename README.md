@@ -2,6 +2,21 @@
 
 Punch Clock ist ein Zeiterfassungssystem, welches mit Quarkus entwickelt wird.
 
+## Aufgabe 1.4: IST-Analyse
+
+Die Abgabe zu Modul 223 (26/4867), Block 1, befindet sich unter
+[`docs/aufgabe-1.4-ist-analyse.pdf`](docs/aufgabe-1.4-ist-analyse.pdf).
+Sie beschreibt den unveraenderten Ausgangsstand mit vier UML-Diagrammen:
+Anwendungsfall-, Klassen-, Sequenz- und Deployment-Diagramm.
+
+Die editierbare Quelle ist
+[`docs/aufgabe-1.4-ist-analyse.html`](docs/aufgabe-1.4-ist-analyse.html).
+Die Diagramme sind als lokale SVG-Grafiken direkt eingebettet; externe
+Dienste oder Bibliotheken sind nicht erforderlich. Zum Erzeugen der PDF
+die HTML-Datei in Edge oder Chrome oeffnen und mit Papierformat A4,
+Skalierung 100 %, ohne Kopf- und Fusszeilen und mit Hintergrundgrafiken
+als PDF drucken. Die Quelle definiert sechs Druckseiten.
+
 ## Erste Schritte
 
 1. Erstelle eine Kopie (fork) von diesem Projekt.

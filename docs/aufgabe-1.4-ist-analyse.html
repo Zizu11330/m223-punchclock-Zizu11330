@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aufgabe 1.4 - IST-Analyse Punch Clock - Zizu11330</title>
+<style>
+  @page { size: A4; margin: 15mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: #172b3a; background: #e8edf2; font: 10.5pt/1.45 Arial, sans-serif; }
+  .page { width: 180mm; min-height: 267mm; margin: 8mm auto; padding: 0; background: white; position: relative; }
+  h1 { font-size: 30pt; line-height: 1.15; margin: 14mm 0 7mm; color: #123e59; }
+  h2 { font-size: 20pt; line-height: 1.2; margin: 7mm 0 4mm; color: #123e59; }
+  h3 { font-size: 12pt; margin: 5mm 0 2mm; }
+  p { margin: 2.5mm 0; }
+  .eyebrow { border-top: 3mm solid #167d9a; padding-top: 4mm; font-size: 9pt; letter-spacing: .5px; }
+  .lead { font-size: 13pt; color: #426174; }
+  .note { border-left: 1mm solid #167d9a; padding: 3mm 4mm; background: #eef6f9; margin: 4mm 0; }
+  .sources { font-size: 8.5pt; color: #456; margin-top: 5mm; overflow-wrap: anywhere; }
+  .footer { margin-top: 6mm; padding-top: 2mm; border-top: .3mm solid #ccd8df; color: #567; font-size: 8pt; display: flex; justify-content: space-between; }
+  table { width: 100%; border-collapse: collapse; margin: 4mm 0; font-size: 9.5pt; }
+  th, td { padding: 2.3mm; border-bottom: .3mm solid #ccd8df; text-align: left; vertical-align: top; }
+  th { background: #edf4f7; }
+  code { font: 9pt Consolas, monospace; overflow-wrap: anywhere; }
+  a { color: #126581; }
+  svg { display: block; width: 100%; height: auto; margin: 4mm 0; }
+  svg text { font-family: Arial, sans-serif; fill: #172b3a; font-size: 14px; }
+  svg .small { font-size: 12px; }
+  svg .title { font-weight: bold; font-size: 16px; }
+  svg .box, svg .usecase { fill: #f0f7fa; stroke: #285d78; stroke-width: 1.5; }
+  svg .boundary { fill: white; stroke: #285d78; stroke-width: 1.5; }
+  svg .line { fill: none; stroke: #285d78; stroke-width: 1.5; }
+  svg .dependency { fill: none; stroke: #285d78; stroke-width: 1.5; stroke-dasharray: 6 4; }
+  svg .life { stroke: #8299a6; stroke-width: 1; stroke-dasharray: 5 4; }
+  svg .activation { fill: #d3e8f1; stroke: #285d78; }
+  @media screen { .page { padding: 7mm; width: 194mm; box-shadow: 0 2px 12px #aab8c5; } }
+  @media print { body { background: white; } .page { margin: 0; min-height: 0; height: 266mm; break-after: page; } .page:last-child { break-after: auto; } * { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+</style>
+</head>
+<body>
+<section class="page">
+  <div class="eyebrow">MODUL 223 - 26/4867 | BLOCK 1 | AUFGABE 1.4</div>
+  <h1>Punch Clock<br>Analyse der IST-Situation</h1>
+  <p class="lead">Strukturierung einer Enterprise-Applikation anhand des vorhandenen Quellcodes</p>
+  <table>
+    <tr><th>Bearbeitung</th><td>Zizu11330</td></tr>
+    <tr><th>Datum</th><td>5. November 2026</td></tr>
+    <tr><th>Vorlage</th><td><a href="https://github.com/zlict/m223-punchclock">github.com/zlict/m223-punchclock</a></td></tr>
+    <tr><th>Eigener Fork</th><td><a href="https://github.com/Zizu11330/m223-punchclock-Zizu11330">github.com/Zizu11330/m223-punchclock-Zizu11330</a></td></tr>
+    <tr><th>Analysierter Stand</th><td><code>6fb325c80bf7c917b3d099d63fd0842072122b0d</code><br>Branch <code>main</code> der Vorlage beim Fork</td></tr>
+  </table>
+  <h3>Zweck und Umfang</h3>
+  <p>Punch Clock ist ein einfaches Zeiterfassungssystem. Im Browser werden Ein- und Austrittszeit eines abgeschlossenen Zeitintervalls erfasst. Eine Tabelle zeigt alle gespeicherten Eintraege mit ID und den beiden Zeitpunkten an.</p>
+  <p>Die Analyse beschreibt ausschliesslich den vorhandenen Stand. Es wurden keine zusaetzlichen Fachfunktionen implementiert. Die Aussagen beruhen auf einer statischen Quellcodeanalyse; sie sind keine Bestaetigung eines erfolgreichen Laufzeittests.</p>
+  <h3>Architektur im Ueberblick</h3>
+  <table>
+    <tr><th>Schicht</th><th>Vorhandene Umsetzung</th></tr>
+    <tr><td>Praesentation</td><td>Statisches HTML/CSS und JavaScript; <code>fetch</code> fuer JSON-Anfragen.</td></tr>
+    <tr><td>REST-Schnittstelle</td><td><code>EntryController</code> mit GET und POST unter <code>/entries</code>.</td></tr>
+    <tr><td>Anwendungslogik</td><td><code>EntryService</code> delegiert Lesezugriffe und kapselt das Speichern in einer Transaktion.</td></tr>
+    <tr><td>Datenzugriff / Modell</td><td><code>EntryRepository</code> nutzt Panache; <code>Entry</code> ist eine JPA-Entity. PostgreSQL speichert die Daten.</td></tr>
+  </table>
+  <p>Technische Basis laut <code>pom.xml</code>: Java 25, Quarkus 3.33.4, Maven, Jakarta REST/CDI/Transactions, Hibernate ORM mit Panache und Jackson. OpenAPI dokumentiert die Schnittstelle.</p>
+  <div class="footer"><span>IST-Analyse | Zizu11330</span><span>1 / 6</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">FUNKTIONALE SICHT</div>
+  <h2>1. UML-Anwendungsfalldiagramm</h2>
+  <svg viewBox="0 0 760 395" role="img" aria-label="Benutzer kann alle Zeiteintraege anzeigen und einen Zeiteintrag erfassen.">
+    <rect class="boundary" x="235" y="25" width="495" height="340"/>
+    <text class="title" x="255" y="55">Punch Clock</text>
+    <circle class="line" cx="105" cy="130" r="20"/>
+    <path class="line" d="M105 150V225 M65 180H145 M105 225L70 275 M105 225L140 275"/>
+    <text x="105" y="305" text-anchor="middle">Benutzer</text>
+    <ellipse class="usecase" cx="480" cy="135" rx="172" ry="48"/>
+    <text x="480" y="132" text-anchor="middle">Alle Zeiteintraege</text>
+    <text x="480" y="153" text-anchor="middle">anzeigen</text>
+    <ellipse class="usecase" cx="480" cy="275" rx="172" ry="48"/>
+    <text x="480" y="272" text-anchor="middle">Zeiteintrag erfassen</text>
+    <text class="small" x="480" y="293" text-anchor="middle">(Check-in und Check-out gemeinsam)</text>
+    <path class="line" d="M145 180L310 135 M145 180L310 275"/>
+  </svg>
+  <h3>Akteur und Systemgrenze</h3>
+  <p>Der Benutzer bedient den Webclient. Eine fachliche Unterscheidung zwischen Mitarbeitenden und Administratoren existiert im Code nicht. Die Datenbank ist ein internes technisches Element und deshalb kein fachlicher Akteur.</p>
+  <table>
+    <tr><th>Anwendungsfall</th><th>Ablauf im vorhandenen System</th></tr>
+    <tr><td>Alle Zeiteintraege anzeigen</td><td>Beim Laden der Seite ruft <code>indexEntries()</code> GET <code>/entries</code> auf. Die Antwort wird in <code>entries</code> uebernommen und als Tabelle dargestellt.</td></tr>
+    <tr><td>Zeiteintrag erfassen</td><td>Der Benutzer fuellt zwei Datums- und zwei Zeitfelder aus. <code>createEntry()</code> sendet beide Zeitpunkte per POST. Die zurueckgegebene Entity wird an die lokale Liste angehaengt und angezeigt.</td></tr>
+  </table>
+  <div class="note">Kein getrenntes Live-Ein- oder Ausstempeln: Das Formular verlangt Check-in und Check-out bereits beim Speichern.</div>
+  <h3>Nicht Teil der IST-Funktionen</h3>
+  <p>Es gibt keine Anmeldung, Benutzerzuordnung, Rollen, Bearbeitung, Loeschung, Suche, Filterung oder Auswertung der Arbeitsdauer. Diese Funktionen sind weder im Formular noch als entsprechende REST-Endpunkte implementiert.</p>
+  <p class="sources">Belege: <code>src/main/resources/META-INF/resources/index.html</code>, <code>script.js</code>; <code>src/main/java/ch/zli/m223/controller/EntryController.java</code>.</p>
+  <div class="footer"><span>IST-Analyse | Zizu11330</span><span>2 / 6</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">STATISCHE SICHT</div>
+  <h2>2. UML-Klassendiagramm</h2>
+  <svg viewBox="0 0 760 620" role="img" aria-label="Controller nutzt Service, Service nutzt Repository. Repository implementiert PanacheRepository fuer Entry. Entry hat id, checkIn und checkOut.">
+    <defs>
+      <marker id="classArrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2 2L10 6L2 10" fill="none" stroke="#285d78"/></marker>
+      <marker id="realization" markerWidth="15" markerHeight="15" refX="13" refY="7" orient="auto"><path d="M1 1L13 7L1 13Z" fill="white" stroke="#285d78"/></marker>
+    </defs>
+    <rect class="box" x="15" y="20" width="340" height="145"/>
+    <text class="small" x="185" y="42" text-anchor="middle">&#171;REST resource&#187; controller</text>
+    <text class="title" x="185" y="65" text-anchor="middle">EntryController</text>
+    <path class="line" d="M15 77H355 M15 112H355"/>
+    <text x="27" y="99">~ entryService: EntryService</text>
+    <text x="27" y="135">+ index(): List&lt;Entry&gt;</text>
+    <text x="27" y="155">+ create(entry: Entry): Entry</text>
+    <rect class="box" x="15" y="235" width="340" height="145"/>
+    <text class="small" x="185" y="257" text-anchor="middle">&#171;ApplicationScoped&#187; service</text>
+    <text class="title" x="185" y="280" text-anchor="middle">EntryService</text>
+    <path class="line" d="M15 292H355 M15 327H355"/>
+    <text x="27" y="315">- entryRepository: EntryRepository</text>
+    <text x="27" y="350">+ createEntry(entry: Entry): Entry</text>
+    <text x="27" y="372">+ findAll(): List&lt;Entry&gt;</text>
+    <path class="dependency" d="M185 165V235" marker-end="url(#classArrow)"/>
+    <text class="small" x="197" y="204">&#171;inject&#187;</text>
+    <rect class="box" x="15" y="450" width="340" height="80"/>
+    <text class="small" x="185" y="475" text-anchor="middle">&#171;ApplicationScoped&#187; repository</text>
+    <text class="title" x="185" y="500" text-anchor="middle">EntryRepository</text>
+    <path class="line" d="M15 512H355"/>
+    <path class="dependency" d="M185 380V450" marker-end="url(#classArrow)"/>
+    <text class="small" x="197" y="419">&#171;inject&#187;</text>
+    <rect class="box" x="425" y="450" width="320" height="80"/>
+    <text class="small" x="585" y="474" text-anchor="middle">&#171;interface&#187; Panache (extern)</text>
+    <text class="title" x="585" y="500" text-anchor="middle">PanacheRepository&lt;Entry&gt;</text>
+    <text class="small" x="585" y="521" text-anchor="middle">persist(), listAll(), weitere Operationen</text>
+    <path class="dependency" d="M355 490H425" marker-end="url(#realization)"/>
+    <rect class="box" x="425" y="20" width="320" height="270"/>
+    <text class="small" x="585" y="42" text-anchor="middle">&#171;Entity&#187; model</text>
+    <text class="title" x="585" y="65" text-anchor="middle">Entry</text>
+    <path class="line" d="M425 77H745 M425 161H745"/>
+    <text x="437" y="99">- id: Long</text>
+    <text x="437" y="123">- checkIn: LocalDateTime</text>
+    <text x="437" y="147">- checkOut: LocalDateTime</text>
+    <text x="437" y="184">+ getId(): Long</text>
+    <text x="437" y="204">+ setId(id: Long): void</text>
+    <text x="437" y="224">+ getCheckIn(): LocalDateTime</text>
+    <text x="437" y="244">+ setCheckIn(...): void</text>
+    <text x="437" y="264">+ getCheckOut(): LocalDateTime</text>
+    <text x="437" y="284">+ setCheckOut(...): void</text>
+    <path class="dependency" d="M355 140H425" marker-end="url(#classArrow)"/>
+    <path class="dependency" d="M355 320H395V275H425" marker-end="url(#classArrow)"/>
+    <text class="small" x="467" y="350">Repository-Typparameter Entry:</text>
+    <text class="small" x="467" y="371">Persistenzzugriff auf Entry-Objekte.</text>
+    <path class="dependency" d="M665 450V290" marker-end="url(#classArrow)"/>
+    <text class="small" x="18" y="580">Legende: + public, - private, ~ package-private; gestrichelt = Abhaengigkeit.</text>
+    <text class="small" x="18" y="601">Hohles Dreieck = Interface-Realisierung; offene Pfeilspitze = Nutzung.</text>
+  </svg>
+  <p>CDI injiziert die Abhaengigkeiten. <code>EntryRepository</code> deklariert keine eigenen Methoden, sondern nutzt die Standardoperationen von <code>PanacheRepository&lt;Entry&gt;</code>. Die gestrichelten Pfeile zu <code>Entry</code> sind Typabhaengigkeiten, keine fachlichen Assoziationen.</p>
+  <p><code>id</code> ist der automatisch erzeugte Primaerschluessel (IDENTITY). <code>checkIn</code> und <code>checkOut</code> sind laut JPA-Mapping nicht nullable. Weitere Entities oder Beziehungen gibt es nicht. <code>createEntry()</code> ist mit <code>@Transactional</code> annotiert; Getter-/Setter-Parameter sind teilweise gekuerzt.</p>
+  <p class="sources">Belege: alle vier Java-Klassen unter <code>src/main/java/ch/zli/m223</code>.</p>
+  <div class="footer"><span>IST-Analyse | Zizu11330</span><span>3 / 6</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">DYNAMISCHE SICHT</div>
+  <h2>3. UML-Sequenzdiagramm</h2>
+  <p>Erfolgsfall: Der Benutzer speichert ein vollstaendiges Zeitintervall.</p>
+  <svg viewBox="0 0 800 685" role="img" aria-label="Browser sendet POST, Controller ruft Service auf, Service persistiert ueber Repository in der Datenbank und liefert Entry zurueck.">
+    <defs><marker id="seqArrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M1 1L9 5L1 9" fill="none" stroke="#285d78"/></marker></defs>
+    <rect class="box" x="5" y="15" width="100" height="48"/><text x="55" y="44" text-anchor="middle">Benutzer</text>
+    <rect class="box" x="125" y="15" width="115" height="48"/><text x="182" y="44" text-anchor="middle">:Webclient</text>
+    <rect class="box" x="260" y="15" width="125" height="48"/><text class="small" x="322" y="44" text-anchor="middle">:EntryController</text>
+    <rect class="box" x="405" y="15" width="115" height="48"/><text class="small" x="462" y="44" text-anchor="middle">:EntryService</text>
+    <rect class="box" x="540" y="15" width="125" height="48"/><text class="small" x="602" y="44" text-anchor="middle">:EntryRepository</text>
+    <rect class="box" x="685" y="15" width="110" height="48"/><text x="740" y="44" text-anchor="middle">PostgreSQL</text>
+    <path class="life" d="M55 63V645 M182 63V645 M322 63V645 M462 63V645 M602 63V645 M740 63V645"/>
+    <rect class="activation" x="176" y="100" width="12" height="515"/>
+    <rect class="activation" x="316" y="210" width="12" height="330"/>
+    <rect class="activation" x="456" y="275" width="12" height="225"/>
+    <rect class="activation" x="596" y="335" width="12" height="95"/>
+    <path class="line" d="M55 105H176" marker-end="url(#seqArrow)"/><text class="small" x="65" y="94">Formular senden</text>
+    <path class="line" d="M188 140H225V175H188" marker-end="url(#seqArrow)"/>
+    <text class="small" x="240" y="146">preventDefault(), FormData lesen,</text>
+    <text class="small" x="240" y="166">Zeitpunkte via toISOString() umwandeln</text>
+    <path class="line" d="M188 215H316" marker-end="url(#seqArrow)"/>
+    <text class="small" x="195" y="196">POST /entries</text>
+    <text class="small" x="195" y="235">JSON: checkIn, checkOut</text>
+    <text class="small" x="338" y="255">create(entry)</text>
+    <path class="line" d="M328 280H456" marker-end="url(#seqArrow)"/><text class="small" x="335" y="270">createEntry(entry)</text>
+    <rect x="435" y="299" width="350" height="192" fill="none" stroke="#167d9a" stroke-dasharray="3 3"/>
+    <text class="small" x="445" y="318">Transaktion durch Quarkus-Interceptor</text>
+    <path class="line" d="M468 345H596" marker-end="url(#seqArrow)"/><text class="small" x="485" y="335">persist(entry)</text>
+    <path class="line" d="M608 385H740" marker-end="url(#seqArrow)"/><text class="small" x="618" y="375">INSERT via ORM*</text>
+    <path class="dependency" d="M740 418H608" marker-end="url(#seqArrow)"/><text class="small" x="630" y="408">generierte ID</text>
+    <path class="dependency" d="M596 443H468" marker-end="url(#seqArrow)"/><text class="small" x="494" y="434">void</text>
+    <text class="small" x="483" y="477">* Flush / Commit frameworkgesteuert</text>
+    <path class="dependency" d="M456 512H328" marker-end="url(#seqArrow)"/><text class="small" x="365" y="502">entry mit ID</text>
+    <path class="dependency" d="M316 548H188" marker-end="url(#seqArrow)"/><text class="small" x="197" y="538">200 OK + Entry (JSON)</text>
+    <path class="line" d="M188 575H225V607H188" marker-end="url(#seqArrow)"/>
+    <text class="small" x="240" y="581">result.json(), entries.push(entry),</text>
+    <text class="small" x="240" y="601">renderEntries()</text>
+    <path class="dependency" d="M176 635H55" marker-end="url(#seqArrow)"/><text class="small" x="61" y="658">Tabelle aktualisiert</text>
+  </svg>
+  <p>Die Datenbankkommunikation ist vereinfacht dargestellt: Nicht das Repository selbst baut SQL, sondern Hibernate/Panache. Quarkus verwaltet die Transaktion um den Service-Aufruf; ein erfolgreicher Commit liegt vor der erfolgreichen HTTP-Antwort.</p>
+  <p>Das anschliessende Anzeigen erfolgt lokal, ohne erneutes GET. Der Status <code>200</code> entspricht dem vorhandenen Endpoint-Test; ein ausdrueckliches <code>201 Created</code> setzt der Controller nicht.</p>
+  <p class="sources">Belege: <code>script.js</code>, <code>EntryController.java</code>, <code>EntryService.java</code>, <code>EntryRepository.java</code>, <code>EntryResourceTest.java</code>. Fehlerfaelle sind nicht Teil dieses Erfolgsablaufs.</p>
+  <div class="footer"><span>IST-Analyse | Zizu11330</span><span>4 / 6</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">TECHNISCHE VERTEILUNG</div>
+  <h2>4. UML-Deployment-Diagramm</h2>
+  <p>Konfigurierte Entwicklungsumgebung mit Docker Compose, nicht eine angenommene Produktionsarchitektur.</p>
+  <svg viewBox="0 0 760 540" role="img" aria-label="Browser greift auf Quarkus im App-Container zu, Quarkus auf PostgreSQL im DB-Container. PgAdmin ist ein eigener Container mit Datenbankzugriff.">
+    <rect class="boundary" x="15" y="15" width="730" height="505"/>
+    <text class="title" x="35" y="43">&#171;device&#187; Entwicklungsrechner</text>
+    <rect class="box" x="40" y="65" width="680" height="75"/>
+    <text class="title" x="60" y="91">&#171;executionEnvironment&#187; Webbrowser</text>
+    <text x="60" y="118">&#171;artifact&#187; index.html, script.js, style.css</text>
+    <rect class="boundary" x="40" y="200" width="680" height="290"/>
+    <text class="title" x="60" y="227">&#171;executionEnvironment&#187; Docker / Compose</text>
+    <rect class="box" x="60" y="255" width="280" height="100"/>
+    <text class="title" x="75" y="280">&#171;node&#187; app</text>
+    <text x="75" y="305">Quarkus / JVM (Java 25)</text>
+    <text class="small" x="75" y="328">&#171;artifact&#187; Punch Clock + statischer Client</text>
+    <text class="small" x="75" y="346">network_mode: service:db</text>
+    <rect class="box" x="450" y="255" width="245" height="100"/>
+    <text class="title" x="465" y="280">&#171;node&#187; db</text>
+    <text x="465" y="305">PostgreSQL 18.6</text>
+    <text class="small" x="465" y="328">Datenbank: postgres</text>
+    <rect class="box" x="60" y="395" width="280" height="70"/>
+    <text class="title" x="75" y="420">&#171;node&#187; pgadmin</text>
+    <text x="75" y="447">PgAdmin4 9.18 (Administration)</text>
+    <rect class="box" x="450" y="395" width="245" height="70"/>
+    <text class="small" x="465" y="420">&#171;artifact&#187; Volume postgres-data</text>
+    <text class="small" x="465" y="446">Mount: /var/lib/postgresql</text>
+    <path class="line" d="M200 140V255"/><text class="small" x="210" y="164">HTTP localhost:8080</text><text class="small" x="210" y="183">Portweiterleitung / JSON</text>
+    <path class="line" d="M340 300H450"/><text class="small" x="352" y="282">JDBC / TCP</text><text class="small" x="367" y="320">5432</text>
+    <path class="line" d="M90 140V395"/><text class="small" x="95" y="379">HTTP localhost:5050 → 80</text>
+    <path class="line" d="M340 430H395V345H450"/><text class="small" x="345" y="457">TCP 5432</text>
+    <path class="line" d="M573 355V395"/>
+  </svg>
+  <p>Quarkus stellt die statischen Dateien sowie die REST-API bereit. Die App verbindet sich gemaess <code>application.properties</code> ueber JDBC mit PostgreSQL; Host, Datenbank und Zugang werden als Umgebungsvariablen gesetzt. Fuer das Schema ist <code>update</code> konfiguriert.</p>
+  <p>Die Container <code>app</code> und <code>db</code> teilen den Netzwerk-Namespace. Port 8080 ist im Devcontainer weitergeleitet. PgAdmin ist separat auf Host-Port 5050 veroeffentlicht und dient nur der Administration. Das benannte Volume bewahrt die PostgreSQL-Daten ausserhalb des Container-Dateisystems auf.</p>
+  <h3>Abweichende Testumgebung</h3>
+  <p>Die Tests verwenden H2 unter <code>jdbc:h2:mem:test</code> und <code>drop-and-create</code> statt PostgreSQL. Damit wird nicht exakt dieselbe Datenbanktechnik wie in der Entwicklungsumgebung geprueft.</p>
+  <p class="sources">Belege: <code>.devcontainer/docker-compose.yml</code>, <code>.devcontainer/devcontainer.json</code>, <code>.devcontainer/Dockerfile</code>, <code>src/main/resources/application.properties</code> und <code>src/test/resources/application.properties</code>.</p>
+  <div class="footer"><span>IST-Analyse | Zizu11330</span><span>5 / 6</span></div>
+</section>
+
+<section class="page">
+  <div class="eyebrow">BEWERTUNG UND NACHVOLLZIEHBARKEIT</div>
+  <h2>5. Befunde zum IST-Zustand</h2>
+  <table>
+    <tr><th>Aspekt</th><th>Beobachtung und Einordnung</th></tr>
+    <tr><td>Schichtentrennung</td><td>Controller, Service, Repository und Entity haben getrennte Aufgaben. Der Controller greift nicht direkt auf die Datenbank zu. Die Entity dient jedoch zugleich als REST-Ein- und Ausgabemodell; separate DTOs fehlen.</td></tr>
+    <tr><td>Persistenz</td><td>Die ID wird von der Datenbank erzeugt. Beide Zeitpunkte sind nicht nullable. Der Service speichert transaktional und verwendet die Panache-Standardmethoden.</td></tr>
+    <tr><td>Validierung</td><td>Das HTML verlangt alle vier Felder. Im Java-Code fehlen Bean-Validation-Regeln sowie eine fachliche Pruefung, dass Check-out nach Check-in liegt. Die Datenbank-Constraints ersetzen diese Pruefung nicht.</td></tr>
+    <tr><td>Zeitdarstellung</td><td>JavaScript wandelt lokale Eingaben mit <code>toISOString()</code> in UTC-Zeichenketten mit <code>Z</code> um. Das Modell nutzt <code>LocalDateTime</code> ohne Zeitzone. Eine explizite durchgaengige Zeitzonenregel ist nicht implementiert; das konkrete Laufzeitverhalten wurde hier nicht getestet.</td></tr>
+    <tr><td>Fehlerbehandlung</td><td>Der Client kontrolliert weder <code>result.ok</code> noch HTTP-Fehlerstatus und besitzt keinen <code>catch</code>-Handler. Eigene fachliche REST-Fehlerantworten sind in den vier Projektklassen nicht definiert.</td></tr>
+    <tr><td>Konfiguration</td><td>Die API-Basisadresse ist im Client fest auf <code>http://localhost:8080</code> gesetzt. Ein Betrieb unter anderer Adresse erfordert eine Anpassung. CORS ist aktiviert; daraus folgt allein keine Aussage ueber alle erlaubten Origins.</td></tr>
+    <tr><td>Testumfang</td><td><code>EntryResourceTest</code> beschreibt GET auf leerem Bestand, POST eines gueltigen Eintrags (200) und anschliessendes GET. <code>EntryResourceIT</code> erbt diese Tests fuer den paketierten Modus. Negative Faelle und Browserinteraktionen sind nicht enthalten; <code>skipITs</code> ist standardmaessig true und im Native-Profil false.</td></tr>
+  </table>
+  <h3>Fazit</h3>
+  <p>Die Vorlage ist eine kleine, nachvollziehbar geschichtete Grundlage fuer das Modul 223. Sie zeigt den gesamten Weg von einer Browseraktion ueber REST und Anwendungslogik bis zur relationalen Persistenz. Fachlich ist sie auf das Erfassen und Auflisten abgeschlossener Zeitintervalle begrenzt.</p>
+  <p>Die aufgefuehrten Luecken beschreiben den Ausgangszustand und sind keine in dieser Aufgabe umgesetzten Erweiterungen. Fuer eine spaetere Weiterentwicklung waeren vor allem fachliche Validierung, eine klare Zeitkonvention und eine sichtbare Fehlerbehandlung zu klaeren.</p>
+  <h3>Quellen und Methode</h3>
+  <p class="sources">Primaerquelle: <a href="https://github.com/zlict/m223-punchclock/tree/6fb325c80bf7c917b3d099d63fd0842072122b0d">Quellcode der Vorlage am dokumentierten Commit</a>. Ausgewertet wurden die vier Java-Produktivklassen, Webclient-Dateien, beide Testklassen, beide Anwendungskonfigurationen, <code>pom.xml</code>, Devcontainer-Konfiguration und README. Alle UML-Diagramme wurden aus diesen Dateien abgeleitet. Durchgezogene Linien im Anwendungsfall- und Deployment-Diagramm zeigen Assoziationen bzw. Kommunikationspfade. Die HTML-Quelle enthaelt alle Diagramme lokal als editierbares SVG.</p>
+  <div class="footer"><span>IST-Analyse | Zizu11330</span><span>6 / 6</span></div>
+</section>
+</body>
+</html>
